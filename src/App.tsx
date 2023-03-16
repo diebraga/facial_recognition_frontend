@@ -5,17 +5,13 @@ import { useEffect, useRef, useState } from "react";
 type Result = {
   name: string;
   confidence: string;
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
 };
 
 function App() {
   const [results, setResults] = useState<Result[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoading, setIsLoading] = useState(false); // Nouvel état de chargement
+  const [isLoading, setIsLoading] = useState(false); 
 
   const startCamera = async () => {
     if (videoRef.current) {
@@ -69,9 +65,13 @@ function App() {
         body: formData,
       });
 
-      const data = await response.json();
-      setResults(data.results);
-      setIsLoading(false);
+      try {
+        const data = await response.json();
+        setResults(data.results);
+        setIsLoading(false);
+      } catch (error: any) {
+        console.error(error.message);
+      }
     }
   };
 
@@ -111,20 +111,19 @@ function App() {
       <video ref={videoRef} autoPlay></video>
       <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       <br />
-      <button type="submit" style={buttonStyles(false)}>
+      <button type="submit" style={buttonStyles(isLoading)}>
         Submit Image
       </button>
       <br />
       <div style={{ display: "flex", flexDirection: "column" }}>
         {results.map((item) => {
           const str = item.name;
-          const fileName = str.slice(0, str.lastIndexOf(".")); 
-          const words = fileName.split("_"); 
+          const words = str.split("_"); 
           const capitalizedWords = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)); 
           const name = capitalizedWords.join(" ");
           
           return (
-            <div>
+            <div key={item.name}>
               <h1>Name: {name}</h1>
               <br />
               <h1>Confidence: {item.confidence}</h1>
